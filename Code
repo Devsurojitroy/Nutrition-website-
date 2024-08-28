@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nutrition Information for Fruits & Vegetables</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Nutrition Information</h1>
+    </header>
+    <main>
+        <div class="container">
+            <form id="search-form">
+                <div class="form-group">
+                    <input type="text" id="search" placeholder="Enter fruit or vegetable" required>
+                    <select id="category">
+                        <option value="">Select Category</option>
+                        <option value="fruits">Fruits</option>
+                        <option value="vegetables">Vegetables</option>
+                    </select>
+                </div>
+                <button type="submit">Search</button>
+            </form>
+            <div id="results">
+                <div id="nutrition-info"></div>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2024 Nutrition Info</p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
+
+
+css
+
+
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+header {
+    background-color: #2C3E50;
+    color: #fff;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+main {
+    padding: 2rem;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1rem;
+    width: 100%;
+}
+
+input[type="text"], select {
+    padding: 0.75rem;
+    margin: 0.5rem;
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus, select:focus {
+    border-color: #2C3E50;
+    outline: none;
+}
+
+button {
+    padding: 0.75rem;
+    background-color: #2C3E50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    max-width: 400px;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #34495E;
+}
+
+#results {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#nutrition-info {
+    background-color: #fff;
+    padding: 1.5rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    max-width: 600px;
+    width: 100%;
+    transition: transform 0.3s ease;
+}
+
+#nutrition-info:hover {
+    transform: scale(1.02);
+}
+
+.card {
+    background-color: #fff;
+    padding: 1.5rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+footer {
+    background-color: #2C3E50;
+    color: #fff;
+    text-align: center;
+    padding: 1rem;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}
+
+
+
+document.getElementById('search-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const query = document.getElementById('search').value.trim();
+    const category = document.getElementById('category').value;
+
+    if (!query) {
+        document.getElementById('nutrition-info').innerHTML = '<p class="error">Please enter a fruit or vegetable.</p>';
+        return;
+    }
+
+    const apiUrl = `https://api.edamam.com/api/food-database/v2/parser?ingr=${query}&app_id=YOUR_APP_ID&app_key=YOUR_APP_KEY`;
+
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            const food = data.hints[0]?.food;
+            if (food) {
+                const nutrients = food.nutrients;
+                document.getElementById('nutrition-info').innerHTML = `
+                    <div class="card">
+                        <h3>${food.label}</h3>
+                        <p><strong>Category:</strong> ${category || 'N/A'}</p>
+                        <p><strong>Calories:</strong> ${nutrients.ENERC_KCAL || 'N/A'} kcal</p>
+                        <p><strong>Protein:</strong> ${nutrients.PROCNT || 'N/A'} g</p>
+                        <p><strong>Fat:</strong> ${nutrients.FAT || 'N/A'} g</p>
+                        <p><strong>Carbohydrates:</strong> ${nutrients.CHOCDF || 'N/A'} g</p>
+                        <p><strong>Fiber:</strong> ${nutrients.FIBTG || 'N/A'} g</p>
+                        <p><strong>Sugar:</strong> ${nutrients.SUGAR || 'N/A'} g</p>
+                    </div>
+                `;
+            } else {
+                document.getElementById('nutrition-info').innerHTML = '<p class="error">No results found.</p>';
+            }
+        })
+        .catch(error => {
+            document.getElementById('nutrition-info').innerHTML = '<p class="error">Error fetching data.</p>';
+            console.error('Error:', error);
+        });
+});
